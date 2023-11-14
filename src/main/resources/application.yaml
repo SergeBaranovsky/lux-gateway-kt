@@ -1,0 +1,48 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        # Route to the POST endpoint in lux-rest-app
+        - id: foo-route
+          uri: ${FOO_ROUTE_URI:http://localhost:8088}
+          predicates:
+            - Path=/foo
+          filters:
+            - PrefixPath=/api/v1
+            # pre filter - logs all inbound requests for audit purposes
+            - name: LoggingPreFilter
+            # pre filter - validates jwt token
+            - name: AuthPreFilter
+            # post filter - adds custom header
+            - name: HeaderPostFilter
+        # Route to the jwt token endpoint
+        - id: token-route
+          uri: ${TOKEN_ROUTE_URI:http://localhost:9000}
+          predicates:
+            - Path=/token
+          filters:
+            - PrefixPath=/auth
+  main:
+    banner-mode: CONSOLE
+    log-startup-info: true
+server:
+  port: 8080
+jwt:
+  secret: 7f3ee5912d5145766a9f8ee55e6fc0528a5eb31e07bd06a7fde4b8a733c2276a4290f6ba0f3d7a37c16be00ea134187d4fe16917f89a8a3b38e9929f724c1171
+#debug: true
+logging:
+  level:
+    org.apache.commons.httpclient: OFF
+    org.springframework.cloud.gateway: OFF
+    org.springframework.boot.web.embedded.netty: OFF
+    org.springframework.security.core.userdetails: OFF
+    org.springframework.cloud.context.scope: OFF
+    reactor.netty.http.client: OFF
+    com.sergeb.gatewayservice.GatewayServiceKt: OFF
+    com.sergeb.gatewayservice.filters: TRACE
+  file:
+    name: gateway.log
+  pattern:
+    dateformat: yyyy-MM-dd HH:mm:ss.SSS
+    console: '%d{HH:mm:ss}  %highlight(%-5level) %cyan(%logger{36}) - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss}  %-6level %logger{36} - %msg%n'
